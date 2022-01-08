@@ -24,7 +24,7 @@ if platform.system() != 'Windows':
 
 
 class Utility(object):
-    download_dir = os.path.join(path_data, 'widevine_downloader', 'client')
+    download_dir = os.path.join(path_data, package_name, 'client')
     tmp_dir = os.path.join(download_dir, 'tmp')
     proxy_dir = os.path.join(download_dir, 'proxy')
     output_dir = os.path.join(download_dir, 'output')

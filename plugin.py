@@ -34,7 +34,7 @@ class P(object):
     }  
 
     plugin_info = {
-        'version' : '1.2',
+        'version' : '1.3',
         'name' : package_name,
         'category_name' : 'tool',
         'icon' : '',
@@ -67,7 +67,7 @@ package_name = P.package_name
 ModelSetting = P.ModelSetting
 
 
-download_dir = os.path.join(path_data, 'widevine_downloader', 'client')
+download_dir = os.path.join(path_data, package_name, 'client')
 tmp_dir = os.path.join(download_dir, 'tmp')
 proxy_dir = os.path.join(download_dir, 'proxy')
 output_dir = os.path.join(download_dir, 'output')

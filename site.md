@@ -1,4 +1,4 @@
-# widevine_downloader
+# wv_downloader
 
     # url_regex : UI에서 입력한 url을 매칭하기 위한 정규식
     # request_url_regex : 서버에서 받은 url로 매칭하기 위한 정규식
