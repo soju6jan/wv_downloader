@@ -1,0 +1,21 @@
+{
+    "version": "1.2",
+    "name": "wv_downloader",
+    "category_name": "tool",
+    "icon": "",
+    "developer": "soju6jan",
+    "description": "DRM 영상 다운로드",
+    "home": "https://github.com/soju6jan/wv_downloader",
+    "more": "",
+    "policy_level": 5,
+    "dependency": [
+        {
+            "name": "lib_chromedriver_with_browsermob",
+            "home": "https://github.com/soju6jan/lib_chromedriver_with_browsermob"
+        },
+        {
+            "name": "lib_wvtool",
+            "home": "https://github.com/soju6jan/lib_wvtool"
+        }
+    ]
+}

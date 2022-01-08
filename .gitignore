@@ -5,5 +5,4 @@ __pycache__/
 *.zip
 output/
 tmp/
-*.json
 *.log
