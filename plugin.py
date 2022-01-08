@@ -9,11 +9,11 @@ class P(object):
     from flask import Blueprint
     blueprint = Blueprint(package_name, package_name, url_prefix='/%s' %  package_name, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
     menu = {
-        'main' : [package_name, 'widevine 다운로드'],
+        'main' : [package_name, 'Widevine 다운로드'],
         'sub' : [
             ['server', '서버'], ['client', '클라이언트'], ['download', '다운로드'], ['auto', '자동'], ['manual', '매뉴얼'], ['log', '로그'] 
         ], 
-        'category' : 'tool',
+        'category' : 'vod',
         'sub2' : {
             'server' : [
                 ['setting', '서버 설정']
@@ -35,8 +35,8 @@ class P(object):
 
     plugin_info = {
         'version' : '1.3',
-        'name' : package_name,
-        'category_name' : 'tool',
+        'name' : 'vod',
+        'category' : 'tool',
         'icon' : '',
         'developer' : 'soju6jan',
         'description' : 'DRM 영상 다운로드',
