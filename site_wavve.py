@@ -39,7 +39,7 @@ class SiteWavve(SiteBase):
     @classmethod
     def do_driver_action(cls, ins):
         try:
-            tag = WebDriverWait(ins.driver, 30).until(
+            tag = WebDriverWait(ins.dm.driver, 30).until(
                 EC.element_to_be_clickable((By.XPATH, '//button[@class="btn-play btn-default font-out"]'))
             )
             time.sleep(1)
