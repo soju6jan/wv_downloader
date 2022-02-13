@@ -35,6 +35,8 @@ class SiteKakao(SiteBase):
                     self.meta['episode_number'] += -1
                 elif self.meta['title'] == '안소희':
                     self.meta['episode_number'] += 1
+                elif self.meta['title'] == '런웨이':
+                    self.meta['episode_number'] += -1
             else:    
                 self.meta['content_type'] = 'show'
                 self.meta['season_number'] = 1
@@ -133,6 +135,7 @@ class SiteKakao(SiteBase):
             postdata['data']['payload'] = payload
             widevine_license = requests.post(url=lic_url, data=postdata['data'], headers=postdata['headers'])
             data = widevine_license.json()
+            logger.error(d(data))
             license_b64 = data['payload']
             correct, keys = wv.get_result(license_b64)
             
