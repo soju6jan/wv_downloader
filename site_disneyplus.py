@@ -74,7 +74,7 @@ class SiteDisney(SiteBase):
                     elif item['request']['url'].find('_ko_') != -1 and m3u8_data['text'] == None:
                         #logger.warning(item['request']['url'])
                         m3u8_data['text'] = {'lang':'ko', 'mimeType':'text/vtt'}
-                        m3u8_data['audio']['url'] = item['request']['url']
+                        m3u8_data['text']['url'] = item['request']['url']
                         m3u8_data['text']['data'] = self.get_response(item).text
                         ToolBaseFile.write_file(os.path.join(self.temp_dir, f"{self.code}.text.m3u8"), m3u8_data['text']['data'])
                     """

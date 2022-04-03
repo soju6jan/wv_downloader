@@ -71,8 +71,33 @@ class SiteSeezn(SiteBase):
                         m3u8_data['audio']['data'] = self.get_response(item).text
                         ToolBaseFile.write_file(os.path.join(self.temp_dir, f"{self.code}.audio.m3u8"), m3u8_data['audio']['data'])
                         m3u8_data['audio']['lang'] = 'ko'
+                    if item['request']['url'].find('subtitle') != -1:
+                        if '_KOR' in item['request']['url']:
+                            lang = 'ko'
+                        elif '_ENG' in item['request']['url']:
+                            lang = 'en'
+                        else:
+                            continue
+                        if m3u8_data['text'] == None:
+                            m3u8_data['text'] = []
+                        for tmp in m3u8_data['text']:
+                            if tmp['url'] == item['request']['url']:
+                                break
+                        else:
+                            data = self.get_response(item).text
+                            m3u8_data['text'].append(
+                                {
+                                    'lang': lang, 
+                                    'mimeType':'text/vtt',
+                                    'url': item['request']['url'],
+                                    'data': data,
+                                    'filepath_download': os.path.join(self.temp_dir, '{code}.{lang}{force}.{ext}'.format(code=self.code, lang=lang, force='', ext='vtt')),
+                                    'filepath_merge': os.path.join(self.temp_dir, '{code}.{lang}{force}.{ext}'.format(code=self.code, lang=lang, force='', ext='srt')),
+                                }
+                            )
+                            ToolBaseFile.write_file(os.path.join(self.temp_dir, f"{self.code}.{lang}.text.m3u8"), data)
             
-            for ct in ['video', 'audio', 'text']:
+            for ct in ['video', 'audio']:
                 if m3u8_data[ct] == None:
                     continue
                 m3u8_data[ct]['url_list'] = []
@@ -114,7 +139,28 @@ class SiteSeezn(SiteBase):
                 #if ct == 'audio':
                 #    merge_option += ['--language', '0:%s' % m3u8_data[ct]['lang']]
                 merge_option += ['"%s"' % m3u8_data[ct]['filepath_merge']]
-                
+
+            if m3u8_data['text'] != None:
+                for text_item in m3u8_data['text']:
+                    url_list = []
+                    for line in text_item['data'].split('\n'):
+                        if line.startswith('#') == False:
+                            url_list.append(f"{m3u8_base_url}{line}")
+                    for idx, segment_url in enumerate(url_list):
+                        filepath = os.path.join(self.temp_dir, f"{self.code}_{text_item['lang']}_text_{str(idx).zfill(5)}.vtt")
+                        WVTool.aria2c_download(segment_url, filepath)
+                    WVTool.concat(None, os.path.join(self.temp_dir, f"{self.code}_{text_item['lang']}_text_0*.vtt"), text_item['filepath_download'])
+                    vtt = WVTool.read_file(text_item['filepath_download'])
+                    vtt = vtt.replace('WEBVTT', '').replace('X-TIMESTAMP-MAP=LOCAL:00:00:00.000,MPEGTS:0', '')
+                    WVTool.write_file(text_item['filepath_download'], vtt)
+                    WVTool.vtt2srt(text_item['filepath_download'], text_item['filepath_merge'])
+                    merge_option += ['--language', f'"0:{text_item["lang"]}"'] 
+                    if text_item['lang'] == 'ko':
+                        merge_option += ['--default-track', '"0:yes"']
+                    merge_option += ['"%s"' % text_item['filepath_merge']]
+                    
+
+
             if self.meta['content_type'] == 'show':
                 self.output_filename = u'{title}.S{season_number}E{episode_number}.1080p.WEB-DL.AAC.H.264.SW{site}.mkv'.format(
                     title = ToolBaseFile.text_for_filename(self.meta['title']).strip(),
