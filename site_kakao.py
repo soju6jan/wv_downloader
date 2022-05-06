@@ -23,8 +23,11 @@ class SiteKakao(SiteBase):
 
     def prepare(self):
         try:
-            auto_db_item = ModelAutoItem.get_by_site_code(self.name, self.code)
-            logger.warning(auto_db_item)
+            try:
+                auto_db_item = ModelAutoItem.get_by_site_code(self.name, self.code)
+            except:
+                auto_db_item = None
+            #logger.warning(auto_db_item)
 
             if auto_db_item != None:
                 self.meta['content_type'] = 'show'
@@ -149,3 +152,13 @@ class SiteKakao(SiteBase):
         except Exception as e: 
             P.logger.error(f'Exception:{str(e)}')
             P.logger.error(traceback.format_exc())
+
+
+"""
+C:\SJVA3_DEV\lib_wvtool\bin\Windows\aria2c.exe --header="Host:vsl.play.kakao.com" --header="Connection:keep-alive" --header="sec-ch-ua:\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"100\", \"Google Chrome\";v=\"100\"" --header="sec-ch-ua-mobile:?0" --header="User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" --header="sec-ch-ua-platform:\"Windows\"" --header="Accept:*/*" --header="Origin:https://tv.kakao.com" --header="Sec-Fetch-Site:same-site" --header="Sec-Fetch-Mode:cors" --header="Sec-Fetch-Dest:empty" --header="Referer:https://tv.kakao.com/" --header="Accept-Language:ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7" "https://vsl.play.kakao.com/vod/rv3bbddkex0zp4ekqhp5epja9/dash/vhs/cenc/v_t0_HIGH4/000000.m4s" -d C:\SJVA3\data\wv_downloader\client\tmp\kakao\428505430 -o 428505430_video_00000.m4f
+
+
+C:\SJVA3_DEV\lib_wvtool\bin\Windows\aria2c.exe --header="Host:vsl.play.kakao.com" --header="Connection:keep-alive" --header="sec-ch-ua:\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"100\", \"Google Chrome\";v=\"100\"" --header="sec-ch-ua-mobile:?0" --header="User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36" --header="sec-ch-ua-platform:\"Windows\"" --header="Accept:*/*" --header="Origin:https://tv.kakao.com" --header="Sec-Fetch-Site:same-site" --header="Sec-Fetch-Mode:cors" --header="Sec-Fetch-Dest:empty" --header="Referer:https://tv.kakao.com/" --header="Accept-Language:ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7" "https://vsl.play.kakao.com/vod/rv8f2btobs3mfu5ikhs91w455/dash/vhs/cenc/v_t0_HIGH4/000055.m4s?e=1651868693&p=71&h=c1e2e1b6b4473a6ab90d0b49d030ebdc
+" -d C:\SJVA3\data\wv_downloader\client\tmp\kakao\428505430 -o 428505430_video_00000.m4f
+
+"""

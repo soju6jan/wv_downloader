@@ -58,6 +58,7 @@ class SiteBase(object):
         #self.default_process()
         #self.aria2c_timeout = 10000 #다운로드 기본 타임아웃
         #self.is_dash_fragment = False # 통파일, 분할파일 여부
+        self.url_param = ''
 
     
     def set_status(self, status):
@@ -160,6 +161,12 @@ class SiteBase(object):
             #    self.mpd = MPEGDASHParser.parse(self.mpd_url)
             #    
             #else:
+        if self.name == 'kakao':
+            request_list = self.data['har']['log']['entries']
+            for item in reversed(request_list):
+                if item['request']['method'] == 'GET' and 'init.m4s' in item['request']['url']:
+                    self.url_param = item['request']['url'].split('init.m4s')[1]
+                    break
 
         self.mpd_base_url = self.mpd_url[:self.mpd_url.rfind('/')+1]
         self.add_log(f'MPD Base URL : {self.mpd_base_url}')
@@ -425,7 +432,7 @@ class SiteBase(object):
             # 쿠팡만. 다른 url로 요청하기 때문에 host 같은 헤더가 문제 발생
             prefix = self.mpd.base_urls[0].base_url_value
             headers = {}
-        url = f"{prefix}{item['segment_templates']['initialization'].replace('&amp;', '&').replace('$RepresentationID$', item['id']).replace('$Bandwidth$', str(item['bandwidth']))}"
+        url = f"{prefix}{item['segment_templates']['initialization'].replace('&amp;', '&').replace('$RepresentationID$', item['id']).replace('$Bandwidth$', str(item['bandwidth']))}" + self.url_param
         init_filepath = os.path.join(self.temp_dir, f"{self.code}_{item['ct']}_init.m4f")
         #logger.warning(f"INIT URL : {url}")
         WVTool.aria2c_download(url, init_filepath, headers=headers)
@@ -440,7 +447,7 @@ class SiteBase(object):
                 repeat = (timeline.get('r') if timeline.get('r') is not None else 0) + 1
 
                 for i in range(0, repeat):
-                    url = f"{prefix}{item['segment_templates']['media'].replace('&amp;', '&').replace('$RepresentationID$', item['id']).replace('$Number$', str(start)).replace('$Number%06d$', str(start).zfill(6)).replace('$Bandwidth$', str(item['bandwidth'])).replace('$Time$', str(timevalue))}"
+                    url = f"{prefix}{item['segment_templates']['media'].replace('&amp;', '&').replace('$RepresentationID$', item['id']).replace('$Number$', str(start)).replace('$Number%06d$', str(start).zfill(6)).replace('$Bandwidth$', str(item['bandwidth'])).replace('$Time$', str(timevalue))}" + self.url_param
                     filepath = os.path.join(self.temp_dir, f"{self.code}_{item['ct']}_{str(start).zfill(5)}.m4f")
                     WVTool.aria2c_download(url, filepath, headers=headers)
                     timevalue += duration
@@ -448,7 +455,7 @@ class SiteBase(object):
         else:
             # 카카오, 쿠팡(.replace('&amp;', '&'))
             for i in range(start, 5000):
-                url = f"{prefix}{item['segment_templates']['media'].replace('&amp;', '&').replace('$RepresentationID$', item['id']).replace('$Number$', str(i)).replace('$Number%06d$', str(i).zfill(6)).replace('$Bandwidth$', str(item['bandwidth']))}"
+                url = f"{prefix}{item['segment_templates']['media'].replace('&amp;', '&').replace('$RepresentationID$', item['id']).replace('$Number$', str(i)).replace('$Number%06d$', str(i).zfill(6)).replace('$Bandwidth$', str(item['bandwidth']))}" + self.url_param
                 filepath = os.path.join(self.temp_dir, f"{self.code}_{item['ct']}_{str(i).zfill(5)}.m4f")
                 if WVTool.aria2c_download(url, filepath, headers=headers) == False:
                     break
