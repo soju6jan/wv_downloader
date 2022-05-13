@@ -255,6 +255,9 @@ class SiteBase(object):
                 self.adaptation_set[item_adaptation_set['contentType']].append(item_adaptation_set)
        
         #logger.debug(json.dumps(self.adaptation_set, indent=4))
+        #logger.error(len(self.adaptation_set['video']))
+        #logger.error(len(self.adaptation_set['audio']))
+        #logger.error(len(self.adaptation_set['text']))
 
 
     def make_filepath(self, representation):
@@ -275,15 +278,16 @@ class SiteBase(object):
     # 오버라이딩 할 수 있음.
     def make_download_info(self):
         try:
+            # 2022-05-13 오디오 언어별로. 비디오는 하나뿐이니 같이 있어도 됨.
             for ct in ['video', 'audio']:
-                max_band = 0
-                max_item = None
                 for adaptation_set in self.adaptation_set[ct]:
+                    max_band = 0
+                    max_item = None
                     for item in adaptation_set['representation']:
                         if item['bandwidth'] > max_band:
                             max_band = item['bandwidth']
                             max_item = item
-                self.download_list[ct].append(self.make_filepath(max_item))                      
+                    self.download_list[ct].append(self.make_filepath(max_item))
 
             #logger.warning(d(self.adaptation_set['text']))
             # 왓챠는 TEXT  adaptation_set이 여러개
@@ -306,6 +310,7 @@ class SiteBase(object):
             self.merge_option = ['-o', '"%s"' % self.filepath_mkv]
             self.merge_option_etc = []
             self.audio_codec = ''
+            already_includ_audio_codec_on_filename = False
             for ct in ['video', 'audio']:
                 #logger.warning(d(self.download_list))
                 for item in self.download_list[ct]:
@@ -346,8 +351,9 @@ class SiteBase(object):
                     if ct == 'audio':
                         if item['lang'] != None:
                             self.merge_option += ['--language', '0:%s' % item['lang']]
-                        self.audio_codec += item['codec_name'] + '.'
-                        #logger.error(self.merge_option)
+                        if already_includ_audio_codec_on_filename == False:
+                            self.audio_codec += item['codec_name'] + '.'
+                            already_includ_audio_codec_on_filename = True
                     self.merge_option += ['"%s"' % item['filepath_merge']]
 
             #logger.error(self.download_list['text'])
@@ -425,6 +431,7 @@ class SiteBase(object):
 
 
     def download_segment(self, item):
+        #logger.debug(d(item))
         if self.mpd.base_urls == None:
             prefix = self.mpd_base_url
             headers = self.mpd_headers
@@ -433,10 +440,11 @@ class SiteBase(object):
             prefix = self.mpd.base_urls[0].base_url_value
             headers = {}
         url = f"{prefix}{item['segment_templates']['initialization'].replace('&amp;', '&').replace('$RepresentationID$', item['id']).replace('$Bandwidth$', str(item['bandwidth']))}" + self.url_param
-        init_filepath = os.path.join(self.temp_dir, f"{self.code}_{item['ct']}_init.m4f")
+        init_filepath = os.path.join(self.temp_dir, f"{self.code}_{item['ct']}_{item['lang']}_init.m4f")
         #logger.warning(f"INIT URL : {url}")
         WVTool.aria2c_download(url, init_filepath, headers=headers)
 
+        
         start = 0
         if 'start_number' in item['segment_templates'] and item['segment_templates']['start_number'] is not None:
             start = int(item['segment_templates']['start_number'])
@@ -448,7 +456,7 @@ class SiteBase(object):
 
                 for i in range(0, repeat):
                     url = f"{prefix}{item['segment_templates']['media'].replace('&amp;', '&').replace('$RepresentationID$', item['id']).replace('$Number$', str(start)).replace('$Number%06d$', str(start).zfill(6)).replace('$Bandwidth$', str(item['bandwidth'])).replace('$Time$', str(timevalue))}" + self.url_param
-                    filepath = os.path.join(self.temp_dir, f"{self.code}_{item['ct']}_{str(start).zfill(5)}.m4f")
+                    filepath = os.path.join(self.temp_dir, f"{self.code}_{item['ct']}_{item['lang']}_{str(start).zfill(5)}.m4f")
                     WVTool.aria2c_download(url, filepath, headers=headers)
                     timevalue += duration
                     start += 1
@@ -456,10 +464,10 @@ class SiteBase(object):
             # 카카오, 쿠팡(.replace('&amp;', '&'))
             for i in range(start, 5000):
                 url = f"{prefix}{item['segment_templates']['media'].replace('&amp;', '&').replace('$RepresentationID$', item['id']).replace('$Number$', str(i)).replace('$Number%06d$', str(i).zfill(6)).replace('$Bandwidth$', str(item['bandwidth']))}" + self.url_param
-                filepath = os.path.join(self.temp_dir, f"{self.code}_{item['ct']}_{str(i).zfill(5)}.m4f")
+                filepath = os.path.join(self.temp_dir, f"{self.code}_{item['ct']}_{item['lang']}_{str(i).zfill(5)}.m4f")
                 if WVTool.aria2c_download(url, filepath, headers=headers) == False:
                     break
-        WVTool.concat(init_filepath, os.path.join(self.temp_dir, f"{self.code}_{item['ct']}_0*.m4f"), item['filepath_download'])
+        WVTool.concat(init_filepath, os.path.join(self.temp_dir, f"{self.code}_{item['ct']}_{item['lang']}_0*.m4f"), item['filepath_download'])
 
 
     def clean(self):
