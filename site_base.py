@@ -278,8 +278,19 @@ class SiteBase(object):
     # 오버라이딩 할 수 있음.
     def make_download_info(self):
         try:
-            # 2022-05-13 오디오 언어별로. 비디오는 하나뿐이니 같이 있어도 됨.
-            for ct in ['video', 'audio']:
+            # 2022-05-13 오디오 언어별로. 비디오는 하나뿐이니 같이 있어도 됨. swcp때문에
+            # 2022-05-26 니미 비디오 여러개임.. swkk에서 문제
+            for ct in ['video']:
+                max_band = 0
+                max_item = None
+                for adaptation_set in self.adaptation_set[ct]:
+                    for item in adaptation_set['representation']:
+                        if item['bandwidth'] > max_band:
+                            max_band = item['bandwidth']
+                            max_item = item
+                self.download_list[ct].append(self.make_filepath(max_item))
+
+            for ct in ['audio']:
                 for adaptation_set in self.adaptation_set[ct]:
                     max_band = 0
                     max_item = None
